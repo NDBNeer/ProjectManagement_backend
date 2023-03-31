@@ -1,7 +1,33 @@
 import express from "express";
-import { User } from "../models/user.js";
+import User from "../models/user.js";
 
 const userRouter = express.Router();
+
+// route to login user
+userRouter.post("/login", async (req, res) => {
+  try {
+    let user = await User.findOne({
+      email: req.body.email,
+      password: req.body.password,
+    });
+    if (user) {
+      res.status(200).json({
+        status: 200,
+        data: user,
+      });
+    } else {
+      res.status(400).json({
+        status: 400,
+        message: "No user found OR Invalid credentials",
+      });
+    }
+  } catch (err) {
+    res.status(400).json({
+      status: 400,
+      message: err.message,
+    });
+  }
+});
 
 // Route to create a new user
 userRouter.post("/", async (req, res) => {
@@ -104,3 +130,5 @@ userRouter.delete("/:userID", async (req, res) => {
     });
   }
 });
+
+export default userRouter;
