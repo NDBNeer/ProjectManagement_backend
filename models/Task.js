@@ -4,11 +4,15 @@ const taskSchema = new mongoose.Schema({
   name: String,
   description: String,
   status: String,
-  startDate: Date,
-  endDate: Date,
+  startDate: String,
+  endDate: String,
   assignee: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
+  },
+  assosicatedTask: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Task",
   },
   totalHoursWorked: Number,
   hourlyRate: Number,

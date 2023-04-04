@@ -6,6 +6,10 @@ const projectRouter = express.Router();
 
 // function to calculate the overall status of a project
 const calculateProjectStatus = (tasks) => {
+  if (tasks.length === 0) {
+    return "Pending";
+  }
+
   let totalTasks = tasks.length;
   let completedTasks = tasks.filter(
     (task) => task.status === "Completed"
@@ -52,9 +56,28 @@ projectRouter.post("/", async (req, res) => {
 });
 
 // Route to get all projects
-projectRouter.get("/list", async (req, res) => {
+projectRouter.get("/", async (req, res) => {
   try {
     let projects = await Project.find();
+
+    for (let i = 0; i < projects.length; i++) {
+      // find all the tasks with the projectID
+      var tasks = await Task.find();
+      tasks = tasks.filter((task) => {
+        return task.project.toString() == projects[i]._id.toString();
+      });
+
+      const projectStatus = calculateProjectStatus(tasks);
+      const projectCost = calculateProjectCost(tasks);
+
+      projects[i] = {
+        ...projects[i]._doc,
+        status: projectStatus,
+        cost: projectCost,
+        tasks: tasks,
+      };
+    }
+
     res.status(200).json({
       status: 200,
       data: projects,
@@ -87,6 +110,7 @@ projectRouter.get("/:projectID", async (req, res) => {
         status: 200,
         data: {
           project,
+          tasks,
           status: projectStatus,
           cost: projectCost,
         },
@@ -115,12 +139,12 @@ projectRouter.put("/:projectID", async (req, res) => {
       }
     );
     if (project) {
-      res.status(200).json({
+      return res.status(200).json({
         status: 200,
         data: project,
       });
     }
-    res.status(400).json({
+    return res.status(400).json({
       status: 400,
       message: "No Project found",
     });
@@ -135,6 +159,18 @@ projectRouter.put("/:projectID", async (req, res) => {
 // Route to delete a project
 projectRouter.delete("/:projectID", async (req, res) => {
   try {
+    // get all the tasks with the projectID
+    var tasks = await Task.find();
+    tasks = tasks.filter((task) => {
+      return task.project.toString() == req.params.projectID.toString();
+    });
+
+    // delete all the tasks with the projectID
+    tasks.forEach(async (task) => {
+      await Task.findByIdAndRemove(task._id);
+    });
+
+    // delete the project
     let project = await Project.findByIdAndRemove(req.params.projectID);
     if (project) {
       res.status(200).json({

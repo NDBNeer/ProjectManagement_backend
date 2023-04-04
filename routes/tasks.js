@@ -42,12 +42,12 @@ taskRouter.put("/:taskID", async (req, res) => {
       new: true,
     });
     if (task) {
-      res.status(200).json({
+      return res.status(200).json({
         status: 200,
         data: task,
       });
     }
-    res.status(400).json({
+    return res.status(400).json({
       status: 400,
       message: "Task not found",
     });

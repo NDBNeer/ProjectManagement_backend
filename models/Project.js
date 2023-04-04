@@ -3,8 +3,8 @@ import mongoose from "mongoose";
 const projectSchema = new mongoose.Schema({
   name: String,
   description: String,
-  startDate: Date,
-  endDate: Date,
+  startDate: String,
+  endDate: String,
 });
 
 const Project = mongoose.model("Project", projectSchema);
