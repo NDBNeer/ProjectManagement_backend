@@ -63,12 +63,12 @@ taskRouter.delete("/:taskID", async (req, res) => {
   try {
     let task = await Task.findByIdAndDelete(req.params.taskID);
     if (task) {
-      res.status(200).json({
+      return res.status(200).json({
         status: 200,
         data: task,
       });
     }
-    res.status(400).json({
+    return res.status(400).json({
       status: 400,
       message: "Task not found",
     });

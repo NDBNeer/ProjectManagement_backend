@@ -90,6 +90,52 @@ projectRouter.get("/", async (req, res) => {
   }
 });
 
+// Route to get all projects
+projectRouter.post("/assosicatedProjects", async (req, res) => {
+  try {
+    let projects = await Project.find();
+
+    const userId = req.body.userId;
+    console.log(userId);
+
+    for (let i = 0; i < projects.length; i++) {
+      // find all the tasks with the projectID
+      var tasks = await Task.find();
+      tasks = tasks.filter((task) => {
+        return task.project.toString() == projects[i]._id.toString();
+      });
+
+      const projectStatus = calculateProjectStatus(tasks);
+      const projectCost = calculateProjectCost(tasks);
+
+      projects[i] = {
+        ...projects[i]._doc,
+        status: projectStatus,
+        cost: projectCost,
+        tasks: tasks,
+      };
+    }
+
+    projects = projects.filter((project) => {
+      return project.tasks.some((task) => {
+        return task.assignee?.toString() == userId.toString();
+      });
+    });
+    console.log("assosicatedProjects");
+    console.log(projects);
+
+    res.status(200).json({
+      status: 200,
+      data: projects,
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 400,
+      message: err.message,
+    });
+  }
+});
+
 // Route to get a single project
 projectRouter.get("/:projectID", async (req, res) => {
   try {
